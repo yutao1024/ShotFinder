@@ -1,0 +1,10 @@
+google-generativeai==0.8.5
+google-genai==1.49.0
+openai==2.7.1
+anthropic>=0.39.0
+moviepy==2.2.1
+yt-dlp==2025.12.8
+pillow==11.3.0
+numpy==2.1.2
+PyYAML==6.0.3
+requests==2.32.5
