@@ -1,0 +1,48 @@
+INPUT_DIR: "./data_json"
+OUTPUT_DIR: "./videos"
+
+EXTRACT_FRAMES: "./frames"
+RESULTS_DIR: "./results"
+
+LOG_DIR: "./logs"
+
+NODE_PATH: ""
+
+# === API Key Configuration ===
+# Qwen / Alibaba DashScope API Key
+DASHSCOPE_API_KEY: ""
+DASHSCOPE_BASE_URL: ""
+
+# OpenAI API Key
+OPENAI_API_KEY: ""
+
+# Anthropic / Claude API Key
+ANTHROPIC_API_KEY: ""
+
+# Google / Gemini API Key
+GEMINI_API_KEY: ""
+
+# === Model Configuration ===
+# Supports: gemini-*, gpt-*, claude-*, qwen-*
+MODEL_NAME: "gemini-3-pro"
+
+# === Audio Capability Toggle ===
+# Set to 'true' if the MODEL supports audio input.
+# Set to 'false' if the model is vision-only.
+VLM_SUPPORTS_AUDIO: true
+
+
+# === Test Model Configuration ===
+TEST_MODEL: "gemini-2.5-pro"
+
+
+URL_NUM: 2
+MAX_PAGE: 5
+MAX_SEC: 3600
+
+# Google Search API
+SERPAPI_KEY: ""
+
+# Cookies file path
+COOKIES_FILE: "./cookies/cookies.txt"
+
