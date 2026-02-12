@@ -87,9 +87,6 @@ ShotFinder/
     └── video_dataset.json   # Source file containing video 
 ```
 
-Based on the code files you provided, here is the continuation of the `README.md` document. This covers configuration, running the inference pipeline, and evaluation.
-
-
 #### 4. **Configuration:**
 
 Before running the code, you need to configure your **API** keys and environment settings.
