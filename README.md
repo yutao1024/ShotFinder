@@ -13,11 +13,11 @@
 
 ### 📑 Table of Contents
 
-- [🏷️ Key Components](#-key-components)
+- [🏷️ Key Components](#key-components)
 - [✨ Resources](#-resources)
 - [🚀 Quick Start](#-quick-start)
 - [📂 Project Structure](#-project-structure)
-- [📜 Citation](#️-citation)
+- [📜 Citation](#️citation)
 
 ---
 
