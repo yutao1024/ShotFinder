@@ -77,7 +77,7 @@ cd ShotFinder
 ```bash
 conda create -n shotfinder python=3.11.5 -y
 conda activate shotfinder
-PYTHONNOUSERSITE=1 pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 #### 3. **Data Preparation:**
