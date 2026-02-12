@@ -21,7 +21,7 @@
 
 ---
 
-### 🏷️ Key Components
+### 🏷️ Key Components {#key-components}
 
 #### 1. **ShotFinder Benchmark**
 
@@ -187,7 +187,7 @@ ShotFinder/
 ---
 
 
-### 📜 Citation
+### 📜 Citation {#citation}
 
 If you find it useful for your research and applications, please cite related papers/blogs using this BibTeX:
 ```bibtex
