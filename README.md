@@ -47,7 +47,7 @@
 
 - **Three-Stage Retrieval Framework**: A text-driven system designed to locate specific shots in open-domain videos through **Generator**, **Retriever**, and **Localizer** modules.
 
-- **Stage 1: Query Expansion via Video Imagination**: Unlike simple keyword extraction, the **Generator** uses an LLM to "imagine" the full video content and title from a short shot description, bridging the semantic gap between a specific shot and searchable video metadata.
+- **Stage 1: Query Expansion via Video Imagination**: Unlike simple keyword extraction, the **Generator** uses an VLM to "imagine" the full video content and title from a short shot description, bridging the semantic gap between a specific shot and searchable video metadata.
 
 - **Stage 2: Web Video Retrieval**: The **Retriever** interacts with search engines using the imagined queries to filter and download a set of candidate videos from the web.
 
@@ -87,8 +87,8 @@ ShotFinder/
 ├── data_json/               # Input Data
 │   └── video_dataset.json   # Source file containing video metadata
 ├── images/                  # Ground Truth Images
-│   ├── 0001.jpg             # Matches video ID "0001"
-│   ├── 0002.jpg             # Matches video ID "0002"
+│   ├── youtube_hE3tW0ujXEM.jpg             # Matches video ID "youtube_hE3tW0ujXEM"
+│   ├── youtube_Oa0ZHfcalCM.jpg             # Matches video ID "youtube_Oa0ZHfcalCM"
 │   └── ...
 ```
 
@@ -96,7 +96,7 @@ ShotFinder/
 
 Before running the code, you need to configure your **API** keys and environment settings.
 
-1. **API Keys**: Open `config/config.yaml` (create it if it doesn't exist, using the structure below) and add your API keys. You will need a **SerpApi** key for the search agent and LLM keys for the models you intend to use.
+1. **API Keys**: Open `config/config.yaml` (create it if it doesn't exist, using the structure below) and add your API keys. You will need a **SerpApi** key for the search agent and VLM keys for the models you intend to use.
 ```yaml
 # config/config.yaml example
 GEMINI_API_KEY: "your_gemini_key"
@@ -121,7 +121,13 @@ MAX_SEC: 3600 # Max video duration in seconds
 
 2. **YouTube Cookies**: To ensure stable video downloading with `yt-dlp`, export your YouTube cookies to a Netscape formatted text file (e.g., using a browser extension) and save it as `config/cookies.txt`.
 3. **Dependencies**: Ensure `ffmpeg` and `node` are installed on your system, as they are required for video processing and downloading.
-4. **Prompt Configuration**: Modify `config/prompt.yaml` to adjust the `SEARCH_PROMPT`. Specifically, you should update the instruction regarding the quantity of keywords to ensure the agent generates an appropriate number of search queries for your needs.
+```bash
+sudo apt update
+sudo apt install -y ffmpeg nodejs npm
+```
+
+4. **Prompt Configuration**: Modify `config/prompt.yaml` to adjust the `SEARCH_PROMPT`. Specifically, you should update the instruction regarding the quantity of keywords to control the number of search queries generated per attempt, and adjust the quantity of the provided examples in the `=== EXAMPLES ===` section to ensure consistency with your requirements.
+
 
 
 
@@ -139,7 +145,7 @@ python main.py \
 **Parameters:**
 
 * `--input_path`: Path to the input JSON dataset.
-* `--model_name`: The name of the LLM/VLM to use (`gemini-3-pro`,`gemini-2.5-pro`, `gpt-5.2`, `gpt-5-mini`, `claude-4.0-Sonnet`, `qwen3-omni-30b-a3b`, `qwen3-vl-235b-a22b`).
+* `--model_name`: The name of the VLM to use (`gemini-3-pro`,`gemini-2.5-pro`, `gpt-5.2`, `gpt-5-mini`, `claude-4.0-Sonnet`, `qwen3-omni-30b-a3b`, `qwen3-vl-235b-a22b`).
 * `--config_path`: Path to your configuration file (default: `./config/config.yaml`).
 
 
