@@ -111,8 +111,8 @@ COOKIES_FILE: "./config/cookies.txt" # Required for yt-dlp
 NODE_PATH: "/usr/bin/node" # Path to node.js (required for some yt-dlp extractors)
 
 # Search Settings
-URL_NUM: 3 # Number of chosen URLs
-MAX_PAGE: 2 # Web pages to search
+URL_NUM: 2 # Number of chosen URLs
+MAX_PAGE: 5 # Web pages to search
 MAX_SEC: 3600 # Max video duration in seconds
 ```
 
