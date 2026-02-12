@@ -13,15 +13,15 @@
 
 ### 📑 Table of Contents
 
-- [🏷️ Key Components](#key-components)
+- [🏷️ Key Components](#-key-components)
 - [✨ Resources](#-resources)
 - [🚀 Quick Start](#-quick-start)
 - [📂 Project Structure](#-project-structure)
-- [📜 Citation](#️citation)
+- [📜 Citation](#️-citation)
 
 ---
 
-### 🏷️ Key Components {#key-components}
+### 🏷️ Key Components
 
 #### 1. **ShotFinder Benchmark**
 
@@ -187,7 +187,7 @@ ShotFinder/
 ---
 
 
-### 📜 Citation {#citation}
+### 📜 Citation
 
 If you find it useful for your research and applications, please cite related papers/blogs using this BibTeX:
 ```bibtex
