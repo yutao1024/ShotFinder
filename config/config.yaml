@@ -3,6 +3,7 @@ OUTPUT_DIR: "./videos"
 
 EXTRACT_FRAMES: "./frames"
 RESULTS_DIR: "./results"
+GT_IMAGES_DIR: "./images"
 
 LOG_DIR: "./logs"
 

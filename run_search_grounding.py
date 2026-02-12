@@ -4,9 +4,9 @@ import time
 import random
 import hashlib
 import subprocess
+import shutil
 from google import genai
 from google.genai import types
-from moviepy import VideoFileClip
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from agent_search import run_agent_search
 from tools_lib import format_user_input, parse_timestamp, download_videos_deterministic
@@ -294,69 +294,30 @@ def run_grounding(config, frames_dir, res_dir, data, prompt, is_audio, content, 
     logger.info(f"[Grounding] Result details are saved to {res_path}")
 
 
-
 def get_gt_frame(config, data, frames_dir, logger):
 
-    index_path = os.path.join(frames_dir, "frames_index.json")
+    # Target Destination
+    dst_path = os.path.join(frames_dir, 'ground_truth.jpg')
 
-    with open(index_path, 'r') as f: 
-        candidates = json.load(f)
-
-    if not candidates:
+    if os.path.exists(dst_path):
+        logger.info(f"[GT Frame] Target already exists, skipping: {dst_path}")
         return
 
-    f_path = os.path.join(frames_dir, 'ground_truth.jpg')
+    # Source Directory: defaults to './images' if not in config
+    images_dir = config.get('GT_IMAGES_DIR', './images')
+    vid_id = data['id']
+    
+    # Construct Source Path
+    src_path = os.path.join(images_dir, f"{vid_id}.jpg")
 
-
-    base_dir = os.path.join(config['OUTPUT_DIR'], data['id'])
-
-    matches = [
-        os.path.join(base_dir, f)
-        for f in os.listdir(base_dir)
-        if f.lower().startswith('gt_groundtruth') and f.lower().endswith('.mp4')
-    ]
-
-    if not matches:
-        logger.error(f"No ground_truth.mp4 found in {base_dir}")
-        return
-
-
-    v_path = matches[0]
-
-    time_str = data['Time Progress']
-
-    target_time = parse_timestamp(time_str.split(" / ")[0])
-
-    if os.path.exists(f_path):
-        logger.info(f"GT frame already exists, skip: {f_path}")
-        return
-
-    if not os.path.exists(v_path):
-        logger.error(f"GT video not found: {v_path}")
-        return
-    try:
-        with VideoFileClip(v_path) as clip:
-
-            fps = clip.fps 
-            
-            if fps:
-
-                start_frame_idx = int(target_time * fps)
-
-                half_fps_offset = int(fps / 2)
-
-                mid_frame_idx = start_frame_idx + half_fps_offset
- 
-                capture_time = mid_frame_idx / fps
-            else:
-
-                capture_time = target_time
-
-            clip.save_frame(f_path, t=capture_time)
-            logger.info(f"Saved gt frame: {f_path}")
-
-    except Exception as e:
-        logger.error(f"Frame err: {e}")
+    if os.path.exists(src_path):
+        try:
+            shutil.copy(src_path, dst_path)
+            logger.info(f"[GT Frame] Copied GT frame from {src_path} to {dst_path}")
+        except Exception as e:
+            logger.error(f"[GT Frame] Failed to copy GT frame: {e}")
+    else:
+        logger.error(f"[GT Frame] Source image not found: {src_path}")
 
     
 def extract_audio_clip(audio_path, out_audio_path, t, logger, duration=2.0):
@@ -645,4 +606,3 @@ def vlm_test(config, prompt, data, frames_dir, res_dir, vlm_test_dir, is_audio, 
         json.dump(final_result, f, indent=4, ensure_ascii=False)
 
     logger.info(f"[VLM TEST] Results saved to {vlm_test_path}")
-
