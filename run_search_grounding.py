@@ -121,7 +121,7 @@ def _detect_scene_cuts(video_path, threshold, src_duration, logger):
     return sorted({round(timestamp, 6) for timestamp in cut_times})
 
 
-def extract_frames(video_path, output_dir, num_frames, video_id, src_duration, logger):
+def extract_frames(video_path, output_dir, video_id, src_duration, logger):
     """Extract one middle frame per detected shot and return its temporal metadata."""
     try:
         os.makedirs(output_dir, exist_ok=True)
@@ -137,8 +137,6 @@ def extract_frames(video_path, output_dir, num_frames, video_id, src_duration, l
                 break
             cut_times = detected_cuts
             selected_threshold = threshold
-            if len(cut_times) + 1 <= num_frames:
-                break
 
         if cut_times is None:
             logger.warning(
@@ -146,11 +144,6 @@ def extract_frames(video_path, output_dir, num_frames, video_id, src_duration, l
                 "because scene detection was unavailable."
             )
             cut_times = []
-        elif len(cut_times) + 1 > num_frames:
-            logger.warning(
-                f"[Extracting frames] {video_id} still has {len(cut_times) + 1} shots at scene threshold "
-                f"{selected_threshold}; preserving all detected shots."
-            )
 
         boundaries = [0.0, *cut_times, src_duration]
         shots = []
@@ -253,19 +246,9 @@ def process_videos(frames_dir, vid, config, is_audio, logger):
         v_frames_dir = os.path.join(frames_dir, safe_title)
         os.makedirs(v_frames_dir, exist_ok=True)
 
-        if src_duration < 180:
-            frame_num = 32
-        elif src_duration < 600:
-            frame_num = 64
-        elif src_duration < 1800:
-            frame_num = 128
-        else:
-            frame_num = 192
-
         shot_metadata = extract_frames(
             video_path=v['path'],
             output_dir=v_frames_dir,
-            num_frames=frame_num,
             video_id=v["title"],
             src_duration=src_duration,
             logger=logger
