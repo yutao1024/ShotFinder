@@ -5,22 +5,52 @@ import random
 import time
 import llm_handler
 
-def check_video_match(config, vlm_model, vlm_prompt, v_frames_dir, is_audio, num_frames, video_duration, content, logger):
+def _format_shot_metadata(shot_metadata):
+    """Render shot boundaries in the exact line-oriented format used by the prompt."""
+    lines = []
+    for shot in shot_metadata or []:
+        try:
+            frame_id = int(shot["frame_id"])
+            start_time = float(shot["start_time"])
+            end_time = float(shot["end_time"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        lines.append(
+            f"frame_id = {frame_id}, start_time = {start_time:.3f}, end_time = {end_time:.3f}"
+        )
+    return "\n".join(lines) if lines else "(shot metadata unavailable)"
+
+
+def check_video_match(
+    config,
+    vlm_model,
+    vlm_prompt,
+    v_frames_dir,
+    is_audio,
+    num_frames,
+    video_duration,
+    content,
+    logger,
+    shot_metadata=None,
+):
 
     # === Read Audio Capability ===
     model_supports_audio = config.get('VLM_SUPPORTS_AUDIO', False)
     enable_audio_input = is_audio and model_supports_audio
 
     # === Prepare Prompt ===
-    if enable_audio_input:
-        prompt_text = vlm_prompt \
-            .replace("$en_memory_data$", str(content)) \
-            .replace("$VIDEO_DURATION$", str(video_duration)) \
-            .replace("$NUM_FRAMES$", str(num_frames))
-    else:
-        prompt_text = vlm_prompt.replace("$en_memory_data$", str(content))
-        # Replace placeholders for vision-only mode
-        prompt_text = prompt_text.replace("$VIDEO_DURATION$", "unknown").replace("$NUM_FRAMES$", str(num_frames))
+    prompt_text = (
+        vlm_prompt
+        .replace("$en_memory_data$", str(content))
+        .replace("$VIDEO_DURATION$", str(video_duration))
+        .replace("$NUM_FRAMES$", str(num_frames))
+        .replace("$SHOT_METADATA$", _format_shot_metadata(shot_metadata))
+    )
+    if not enable_audio_input:
+        prompt_text += (
+            "\n\nAudio Availability: No audio track is supplied in this invocation. "
+            "Use the visual frames and Shot Metadata as the available evidence."
+        )
 
     # === Collect Frames ===
     def natural_key(s):
@@ -74,15 +104,22 @@ def check_video_match(config, vlm_model, vlm_prompt, v_frames_dir, is_audio, num
 
             # === Parse JSON Result ===
             try:
-                # Clean Markdown tags
+                # Accept both the JSON-only response requested by the API and
+                # the optional tool_call wrapper shown in the prompt.
                 cleaned_text = raw_content.replace("```json", "").replace("```", "").strip()
+                if cleaned_text.startswith("<tool_call>") and cleaned_text.endswith("</tool_call>"):
+                    cleaned_text = cleaned_text[len("<tool_call>"):-len("</tool_call>")].strip()
                 result = json.loads(cleaned_text)
                 
                 frame_id = result.get("frame_id")
-                if frame_id is not None and str(frame_id) != "N/A":
+                if (
+                    isinstance(frame_id, int)
+                    and not isinstance(frame_id, bool)
+                    and 0 <= frame_id < num_frames
+                ):
+                    return {"frame_id": frame_id}
+                elif isinstance(frame_id, str) and frame_id.isdigit() and 0 <= int(frame_id) < num_frames:
                     return {"frame_id": int(frame_id)}
-                elif str(frame_id) == "N/A":
-                    return {"frame_id": "N/A"}
                 else:
                     logger.warning(f"[Grounding] Invalid output format: {result}. Retry...")
             

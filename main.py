@@ -48,7 +48,6 @@ def process_data_with_download_lock(data, config, prompt, task_log_dir):
     # 3. Process Videos (Extract frames)
     process_videos(frames_dir=frames_dir, vid=data["id"], config=config, is_audio=is_audio, logger=logger)
 
-
     # 4. Run Grounding
     res_dir = os.path.join(config['RESULTS_DIR'], "grounding_result")
     os.makedirs(res_dir, exist_ok=True)

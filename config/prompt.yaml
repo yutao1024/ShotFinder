@@ -84,74 +84,59 @@ SEARCH_PROMPT: |
 
 
 MATCH_PROMPT: |
-    # Role
-    You are a Visual Frame Grounding Specialist. Your task is to identify the **single most relevant frame** that best matches the user's description.
+    **Role:** You are a Visual Frame Grounding Specialist. Your task is to identify the single most relevant frame that best matches the user's description.
 
-    # Context
-    - The input consists of **multiple images extracted from a video**.
-    - The images are provided in **strict chronological order**, from the beginning to the end of the video.
-    - The **first image has frame_id = 0**, the second image has frame_id = 1, and so on.
+    **Context:**
+    The input consists of multiple images extracted from a video.
+    The images are provided in strict chronological order, from the beginning to the end of the video.
+    Each image is a representative frame of one video shot, where the frame is sampled approximately from the temporal middle of that shot.
+    The first image has frame_id = 0, the second image has frame_id = 1, and so on.
+    In addition to images, you are also given the full audio track of the video.
+    The audio is not segmented per frame or shot and should be used as global temporal and semantic context, not as a direct frame-to-audio alignment.
 
-    # Target Description (The event to find)
-    - "$en_memory_data$"
+    **Shot Metadata:**
+    For each frame, the corresponding shot's temporal boundaries are provided as start_time and end_time.
+    Each frame_id identifies a representative frame of one shot, and the corresponding start_time and end_time specify the temporal extent of that shot.
 
-    # Instructions
-    1. **Scan All Frames**:
-       Carefully analyze **all** provided images.
+    **Shot Metadata format:**
+    frame_id = 0, start_time = <seconds>, end_time = <seconds>
+    frame_id = 1, start_time = <seconds>, end_time = <seconds>
+    ...
 
-    2. **Select the Best Match**:
-       Identify the **single frame** whose visual content is **most relevant** to the target description.
-       - If multiple frames partially match, choose the **closest and most representative** one.
-       - Even if the match is weak or ambiguous, you must still select the **best available frame**.
+    **Shot Metadata for this video:**
+    $SHOT_METADATA$
 
-    3. **Mandatory Selection Rule**:
-       - You **must return exactly one valid frame_id**.
-       - If no frame clearly matches, return the frame that is **most semantically or visually related** to the description.
+    **Target Description (The event to find):** "$en_memory_data$"
 
-    # Output Format (JSON Only)
-    {
-        "frame_id": "<integer>"
-    }
+    **Instructions:**
 
+    **1. Joint Reasoning with Vision, Audio, and Shot Metadata:**
+    Use the text description, visual content of all frames, the audio track, and the Shot Metadata together.
+    Use audio cues (e.g., speech, sound events, changes in intensity) to infer when the described event occurs.
+    Use the start_time and end_time of each shot to determine which shot covers or is closest to the inferred event time.
+    Use visual evidence from the representative frames to determine which frame best represents the described event.
 
-AUDIO_MATCH_PROMPT: |
-    # Role
-    You are a Visual Frame Grounding Specialist. Your task is to identify the **single most relevant frame** that best matches the user's description.
+    **2. Scan All Frames:** Analyze all provided images in chronological order.
+    Consider both the visual-semantic similarity between the target description and each frame and the temporal consistency between the inferred event time and the corresponding shot's start_time and end_time.
 
-    # Context
-    - The input consists of **multiple images extracted from a video**.
-    - The images are provided in **strict chronological order**, from the beginning to the end of the video.
-    - The **first image has frame_id = 0**, the second image has frame_id = 1, and so on.
-    - In addition to images, you are also given the **full audio track of the video**.
-    - The audio is **not segmented per frame** and should be used as **global temporal and semantic context**, not as a direct frame-to-audio alignment.
+    **3. Select the Best Match:** Identify the single frame whose visual content is most relevant to the target description.
+    If the target event occurs within a shot's temporal interval, prefer the representative frame of that shot.
+    If multiple shots partially match, choose the frame from the shot that provides the strongest combination of visual relevance, semantic relevance, and temporal proximity to the inferred event.
+    If the event occurs near a boundary between two shots, compare the neighboring shots and select the most relevant frame.
+    If the audio provides weak or ambiguous temporal information, select the most semantically and visually related frame.
 
-    # Temporal Information
-    - The video duration is **$VIDEO_DURATION$ seconds**.
-    - A total of **$NUM_FRAMES$ frames** are sampled uniformly from the video.
-    - Frame *i* corresponds approximately to time  
-      **tᵢ = (i + 0.5) / $NUM_FRAMES$ × $VIDEO_DURATION$ seconds**.
+    **4. Important Temporal Reasoning Rule:**
+    Do not assume that frame_id corresponds to a uniformly sampled timestamp.
+    Each frame_id identifies the representative frame of a particular shot.
+    Use the provided start_time and end_time to reason about the temporal location of each shot.
+    The approximate representative time of a shot may be considered as t_i = (start_time_i + end_time_i) / 2.
+    However, the actual visual evidence should take precedence over this approximate representative time when selecting the best match.
 
-    # Target Description (The event to find)
-    - "$en_memory_data$"
+    **5. Mandatory Selection Rule:**
+    You must return exactly one valid frame_id. The frame_id must be an integer between 0 and $NUM_FRAMES$ - 1. Do not return "N/A", null, or multiple values.
 
-    # Instructions
-    1. **Scan All Frames**:
-       Carefully analyze **all** provided images.
-        At the same time, carefully listen to and analyze the **entire audio track**, you must **associate each frame_id with its corresponding video timestamp**.
-
-    2. **Select the Best Match**:
-       Identify the **single frame** whose visual content and audio content is **most relevant** to the target description.
-       - If multiple frames partially match, choose the **closest and most representative** one.
-       - Even if the match is weak or ambiguous, you must still select the **best available frame**.
-
-    3. **Mandatory Selection Rule**:
-       - You **must return exactly one valid frame_id**.
-       - If no frame clearly matches, return the frame that is **most semantically or visually related** to the description.
-
-    # Output Format (JSON Only)
-    {
-        "frame_id": "<integer>"
-    }
+    **Output Format (JSON Only):**
+    <tool_call>{"frame_id": <integer>}</tool_call>
 
 TEST_PROMPT: |
    You are an expert AI visual analyst.
